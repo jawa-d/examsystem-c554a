@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم النتائج</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; }
+        .header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        .card {
+            background: white; border-radius: 20px; padding: 30px;
+            margin-bottom: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; padding: 25px; border-radius: 15px; text-align: center;
+        }
+        .stat-box .number { font-size: 2.5rem; font-weight: 800; }
+        .stat-box .label { font-size: 0.9rem; margin-top: 8px; opacity: 0.9; }
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .results-table th {
+            background: #667eea; color: white; padding: 15px; text-align: right; font-weight: 700;
+        }
+        .results-table td { padding: 15px; border-bottom: 1px solid #e0e0e0; }
+        .results-table tr:hover { background: #f8f9ff; }
+        .score-good { color: #11998e; font-weight: 700; }
+        .score-warning { color: #f0ad4e; font-weight: 700; }
+        .score-bad { color: #eb3349; font-weight: 700; }
+        .btn {
+            padding: 10px 15px; border: none; border-radius: 8px;
+            font-family: 'Tajawal', sans-serif; font-size: 0.9rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s; display: inline-block;
+        }
+        .btn-delete { background: #eb3349; color: white; }
+        .btn-delete:hover { background: #c72f39; }
+        .btn-details { background: #667eea; color: white; }
+        .btn-details:hover { background: #5568d3; }
+        .btn-primary { background: #667eea; color: white; padding: 12px 25px; }
+        .btn-primary:hover { background: #5568d3; }
+        .empty-state { text-align: center; padding: 40px; color: #888; }
+        .empty-state .icon { font-size: 4rem; margin-bottom: 15px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 20px; padding: 30px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; }
+        .modal h2 { margin-bottom: 20px; color: #333; }
+        .modal-close { position: absolute; top: 20px; left: 20px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+        .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .filters input { padding: 10px 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: 'Tajawal', sans-serif; }
+        .filters button { padding: 10px 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 لوحة تحكم النتائج</h1>
+            <p>عرض وإدارة نتائج الامتحانات</p>
+        </div>
+
+        <div class="card">
+            <h2>📈 الإحصائيات العامة</h2>
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-box">
+                    <div class="number" id="totalStudents">0</div>
+                    <div class="label">إجمالي الطلاب</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="totalExams">0</div>
+                    <div class="label">إجمالي الامتحانات</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="averageScore">0%</div>
+                    <div class="label">متوسط النتيجة</div>
+                </div>
+                <div class="stat-box">
+                    <div class="number" id="highestScore">0%</div>
+                    <div class="label">أعلى نتيجة</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>🔍 البحث والتصفية</h2>
+            <div class="filters">
+                <input type="text" id="searchStudent" placeholder="ابحث عن اسم الطالب...">
+                <button class="btn btn-primary" onclick="searchResults()">🔍 بحث</button>
+                <button class="btn btn-primary" onclick="refreshResults()">🔄 إعادة تحميل</button>
+                <button class="btn btn-primary" onclick="exportToCSV()">📥 تصدير CSV</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📋 جميع النتائج</h2>
+            <div id="resultsContainer">
+                <div class="empty-state">
+                    <div class="icon">⏳</div>
+                    <p>جاري تحميل البيانات...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="detailsModal">
+        <div class="modal" id="modalContent">
+            <button class="modal-close" onclick="closeDetailsModal()">✕</button>
+            <div id="detailsContent"></div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+
+    <script>
+        // Firebase Configuration - تعديل بيانات Firebase الخاصة بك (نفس البيانات من exam_system.html)
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        auth.signInAnonymously().then(() => {
+            console.log('تم تسجيل الدخول مجهولاً');
+            loadDashboard();
+        }).catch(err => console.error('خطأ في التسجيل:', err));
+
+        let allResults = [];
+
+        async function loadDashboard() {
+            try {
+                const snapshot = await db.collection('exam_results').orderBy('timestamp', 'desc').get();
+                allResults = [];
+                snapshot.forEach(doc => {
+                    allResults.push({ id: doc.id, ...doc.data() });
+                });
+                updateStatistics();
+                displayResults(allResults);
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">❌</div><p>خطأ في تحميل البيانات. تحقق من إعدادات Firebase.</p></div>';
+            }
+        }
+
+        function updateStatistics() {
+            const uniqueStudents = [...new Set(allResults.map(r => r.studentName))].length;
+            const averageScore = allResults.length > 0 ? Math.round(allResults.reduce((sum, r) => sum + r.score, 0) / allResults.length) : 0;
+            const highestScore = allResults.length > 0 ? Math.max(...allResults.map(r => r.score)) : 0;
+
+            document.getElementById('totalStudents').textContent = uniqueStudents;
+            document.getElementById('totalExams').textContent = allResults.length;
+            document.getElementById('averageScore').textContent = averageScore + '%';
+            document.getElementById('highestScore').textContent = highestScore + '%';
+        }
+
+        function displayResults(results) {
+            if (results.length === 0) {
+                document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">📝</div><p>لا توجد نتائج حتى الآن</p></div>';
+                return;
+            }
+
+            let html = '<table class="results-table"><thead><tr><th>الاسم</th><th>الامتحان</th><th>النتيجة</th><th>صحيح</th><th>خطأ</th><th>التاريخ</th><th>الإجراءات</th></tr></thead><tbody>';
+            
+            results.forEach(result => {
+                const scoreClass = result.score >= 80 ? 'score-good' : (result.score >= 60 ? 'score-warning' : 'score-bad');
+                const date = result.timestamp ? new Date(result.timestamp.toDate()).toLocaleDateString('ar-SA') : '-';
+                
+                html += `<tr>
+                    <td>${result.studentName}</td>
+                    <td>${result.examTitle}</td>
+                    <td class="${scoreClass}">${result.score}%</td>
+                    <td>${result.correct}</td>
+                    <td>${result.wrong}</td>
+                    <td>${date}</td>
+                    <td>
+                        <button class="btn btn-details" onclick="showDetails('${result.id}')">📋 التفاصيل</button>
+                        <button class="btn btn-delete" onclick="deleteResult('${result.id}')">🗑️ حذف</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('resultsContainer').innerHTML = html;
+        }
+
+        function searchResults() {
+            const searchTerm = document.getElementById('searchStudent').value.trim().toLowerCase();
+            if (!searchTerm) {
+                displayResults(allResults);
+                return;
+            }
+            
+            const filtered = allResults.filter(r => r.studentName.toLowerCase().includes(searchTerm));
+            displayResults(filtered);
+        }
+
+        function refreshResults() {
+            document.getElementById('resultsContainer').innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>جاري التحديث...</p></div>';
+            loadDashboard();
+        }
+
+        async function showDetails(resultId) {
+            const result = allResults.find(r => r.id === resultId);
+            if (!result) return;
+
+            let detailsHtml = `<h2>تفاصيل النتيجة</h2>
+                <p><strong>الاسم:</strong> ${result.studentName}</p>
+                <p><strong>الامتحان:</strong> ${result.examTitle}</p>
+                <p><strong>النتيجة:</strong> ${result.score}%</p>
+                <p><strong>إجابات صحيحة:</strong> ${result.correct}</p>
+                <p><strong>إجابات خاطئة:</strong> ${result.wrong}</p>
+                <p><strong>أسئلة متخطاة:</strong> ${result.skipped}</p>
+                <p><strong>الوقت المستغرق:</strong> ${Math.floor(result.totalTime / 60)} دقيقة</p>`;
+
+            document.getElementById('detailsContent').innerHTML = detailsHtml;
+            document.getElementById('detailsModal').classList.add('active');
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('detailsModal').classList.remove('active');
+        }
+
+        async function deleteResult(resultId) {
+            if (confirm('هل تريد حذف هذه النتيجة؟')) {
+                try {
+                    await db.collection('exam_results').doc(resultId).delete();
+                    alert('تم حذف النتيجة بنجاح');
+                    refreshResults();
+                } catch (error) {
+                    alert('خطأ في حذف النتيجة: ' + error.message);
+                }
+            }
+        }
+
+        function exportToCSV() {
+            if (allResults.length === 0) {
+                alert('لا توجد نتائج للتصدير');
+                return;
+            }
+
+            let csv = 'الاسم,الامتحان,النتيجة,صحيح,خطأ,متخطي,الوقت\n';
+            allResults.forEach(result => {
+                const time = Math.floor(result.totalTime / 60);
+                csv += `"${result.studentName}","${result.examTitle}",${result.score},${result.correct},${result.wrong},${result.skipped},${time}\n`;
+            });
+
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+            element.setAttribute('download', 'exam_results.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+            alert('تم تصدير النتائج بنجاح');
+        }
+    </script>
+</body>
+</html>

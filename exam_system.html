@@ -297,8 +297,10 @@
             </div>
 
             <div class="card fade-in" style="text-align:center; padding:40px;">
-                <button class="btn btn-success" onclick="startExam()" style="font-size:1.3rem; padding:18px 50px;">🚀 بدء الامتحان الآن</button>
+                <button class="btn btn-success" onclick="saveExamBeforeStart(); startExam();" style="font-size:1.3rem; padding:18px 50px;">🚀 بدء الامتحان الآن</button>
                 <p style="margin-top:15px; color:#888;">تأكد من إضافة أسئلة قبل بدء الامتحان</p>
+                <p style="margin-top:15px; color:#666; font-size:0.9rem;">💾 سيتم حفظ النتيجة تلقائياً عند الانتهاء من الامتحان</p>
+                <button class="btn btn-primary" onclick="viewAllResults()" style="margin-top:20px; padding:12px 25px;">📊 عرض جميع النتائج</button>
             </div>
         </div>
 
@@ -402,6 +404,33 @@
             </div>
         </div>
     </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
+
+    <script>
+        // Firebase Configuration - تعديل بيانات Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // تسجيل دخول مجهول
+        auth.signInAnonymously().then(() => {
+            console.log('تم تسجيل الدخول مجهولاً');
+        }).catch(err => console.error('خطأ في التسجيل:', err));
+    </script>
 
     <script>
         let questions = [];
@@ -547,7 +576,10 @@
 
         function startExam() {
             if (questions.length === 0) { showModal('⚠️', 'تنبيه', 'يرجى إضافة أسئلة قبل بدء الامتحان'); return; }
-            currentExam = { title: document.getElementById('examTitle').value || 'امتحان بدون عنوان', questions: JSON.parse(JSON.stringify(questions)) };
+            const studentName = document.getElementById('examDesc').value.trim();
+            if (!studentName) { showModal('⚠️', 'تنبيه', 'يرجى إدخال الاسم الثلاثي'); return; }
+            
+            currentExam = { title: document.getElementById('examTitle').value || 'امتحان بدون عنوان', questions: JSON.parse(JSON.stringify(questions)), studentName: studentName };
             currentQIndex = 0;
             userAnswers = new Array(questions.length).fill(null);
             totalTime = 0;
@@ -760,6 +792,24 @@
             const total = questions.length;
             const answered = total - skipped;
             const percentage = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+            
+            // حفظ النتيجة في Firebase
+            const resultData = {
+                studentName: currentExam.studentName,
+                examTitle: currentExam.title,
+                score: percentage,
+                correct: correct,
+                wrong: wrong,
+                skipped: skipped,
+                total: total,
+                totalTime: totalTime,
+                timestamp: new Date(),
+                answers: userAnswers,
+                questions: questions
+            };
+            
+            saveResultToFirebase(resultData);
+            
             document.getElementById('scoreNum').textContent = percentage + '%';
             document.getElementById('statCorrect').textContent = correct;
             document.getElementById('statWrong').textContent = wrong;
@@ -820,6 +870,117 @@
         function closeModal() { document.getElementById('modal').classList.remove('active'); }
 
         selectType('mcq');
+
+        // ========== دوال Firebase ==========
+        
+        // حفظ النتيجة إلى Firebase
+        function saveResultToFirebase(resultData) {
+            db.collection('exam_results').add(resultData)
+                .then((docRef) => {
+                    console.log('تم حفظ النتيجة بنجاح:', docRef.id);
+                    showModal('✅', 'تم الحفظ', 'تم حفظ نتيجة الامتحان بنجاح في قاعدة البيانات');
+                })
+                .catch((error) => {
+                    console.error('خطأ في حفظ النتيجة:', error);
+                    showModal('❌', 'خطأ', 'حدث خطأ أثناء حفظ النتيجة. تحقق من اتصالك بالإنترنت');
+                });
+        }
+
+        // حفظ الامتحان إلى Firebase
+        function saveExamToFirebase(examData) {
+            db.collection('exams').add(examData)
+                .then((docRef) => {
+                    console.log('تم حفظ الامتحان بنجاح:', docRef.id);
+                    showModal('✅', 'تم الحفظ', 'تم حفظ الامتحان بنجاح');
+                })
+                .catch((error) => {
+                    console.error('خطأ في حفظ الامتحان:', error);
+                    showModal('❌', 'خطأ', 'حدث خطأ أثناء حفظ الامتحان');
+                });
+        }
+
+        // استرجاع جميع نتائج الطلاب
+        async function getAllResults() {
+            try {
+                const snapshot = await db.collection('exam_results').orderBy('timestamp', 'desc').get();
+                const results = [];
+                snapshot.forEach(doc => {
+                    results.push({ id: doc.id, ...doc.data() });
+                });
+                return results;
+            } catch (error) {
+                console.error('خطأ في استرجاع النتائج:', error);
+                return [];
+            }
+        }
+
+        // استرجاع نتائج طالب معين
+        async function getStudentResults(studentName) {
+            try {
+                const snapshot = await db.collection('exam_results')
+                    .where('studentName', '==', studentName)
+                    .orderBy('timestamp', 'desc')
+                    .get();
+                const results = [];
+                snapshot.forEach(doc => {
+                    results.push({ id: doc.id, ...doc.data() });
+                });
+                return results;
+            } catch (error) {
+                console.error('خطأ في استرجاع نتائج الطالب:', error);
+                return [];
+            }
+        }
+
+        // حذف نتيجة
+        function deleteResultFromFirebase(resultId) {
+            db.collection('exam_results').doc(resultId).delete()
+                .then(() => {
+                    console.log('تم حذف النتيجة بنجاح');
+                    showModal('✅', 'تم الحذف', 'تم حذف النتيجة بنجاح');
+                })
+                .catch((error) => {
+                    console.error('خطأ في حذف النتيجة:', error);
+                    showModal('❌', 'خطأ', 'حدث خطأ أثناء حذف النتيجة');
+                });
+        }
+
+        // تحديث نتيجة
+        function updateResultInFirebase(resultId, updatedData) {
+            db.collection('exam_results').doc(resultId).update(updatedData)
+                .then(() => {
+                    console.log('تم تحديث النتيجة بنجاح');
+                    showModal('✅', 'تم التحديث', 'تم تحديث النتيجة بنجاح');
+                })
+                .catch((error) => {
+                    console.error('خطأ في تحديث النتيجة:', error);
+                    showModal('❌', 'خطأ', 'حدث خطأ أثناء تحديث النتيجة');
+                });
+        }
+
+        // حفظ الامتحان قبل البدء
+        function saveExamBeforeStart() {
+            const examData = {
+                title: document.getElementById('examTitle').value || 'امتحان بدون عنوان',
+                description: document.getElementById('examDesc').value,
+                questions: questions,
+                totalQuestions: questions.length,
+                createdAt: new Date(),
+                totalDuration: questions.reduce((sum, q) => sum + q.time, 0)
+            };
+            saveExamToFirebase(examData);
+        }
+
+        // عرض جميع النتائج (للمعلم)
+        async function viewAllResults() {
+            const results = await getAllResults();
+            if (results.length === 0) {
+                showModal('ℹ️', 'لا توجد نتائج', 'لم يتم تسجيل أي نتائج حتى الآن');
+                return;
+            }
+            console.table(results);
+            alert('عدد النتائج المسجلة: ' + results.length + '\nتحقق من Console للتفاصيل');
+        }
     </script>
 </body>
 </html>
