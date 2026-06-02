@@ -12,6 +12,7 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 30px 20px;
+            padding-top: 100px;
         }
         
         /* Navbar */
@@ -30,14 +31,13 @@
         .navbar-links a:hover { background: #f0f0f0; color: #667eea; }
         .navbar-links a.active { background: #667eea; color: white; }
         
-        body { padding-top: 100px; }
         .container { max-width: 900px; margin: 0 auto; }
         .card {
             background: white; border-radius: 20px; padding: 30px;
             margin-bottom: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.15);
         }
         
-        .card h2 { color: #333; margin-bottom: 20px; }
+        .card h2 { color: #333; margin-bottom: 20px; font-size: 1.5rem; }
         
         .form-group {
             margin-bottom: 15px;
@@ -51,14 +51,14 @@
             border-radius: 12px; font-family: 'Tajawal', sans-serif;
             font-size: 1rem; transition: all 0.3s;
         }
-        .form-group input:focus, .form-group textarea:focus {
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
             outline: none; border-color: #667eea; box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
         }
         
         .type-selector { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 20px; }
         .type-card {
             padding: 20px; border: 2px solid #e0e0e0; border-radius: 15px;
-            cursor: pointer; text-align: center; transition: all 0.3s;
+            cursor: pointer; text-align: center; transition: all 0.3s; background: white;
         }
         .type-card:hover { border-color: #667eea; background: #f8f9ff; }
         .type-card.active { border-color: #667eea; background: #667eea; color: white; }
@@ -69,19 +69,19 @@
         .option-item {
             display: flex; gap: 10px; margin-bottom: 10px; align-items: center;
         }
-        .option-item input { flex: 1; }
+        .option-item input[type="text"] { flex: 1; }
         .option-item button {
             padding: 8px 12px; background: #eb3349; color: white; border: none;
             border-radius: 8px; cursor: pointer; font-weight: 700;
         }
         .option-item button:hover { background: #c72f39; }
         
-        .tf-answers { display: flex; gap: 20px; justify-content: space-around; padding: 15px; background: #f8f9ff; border-radius: 15px; }
+        .tf-answers { display: flex; gap: 20px; justify-content: space-around; padding: 15px; background: #f8f9ff; border-radius: 15px; margin-bottom: 15px; }
         .tf-btn {
             padding: 15px 30px; border: 2px solid #e0e0e0; border-radius: 12px;
-            cursor: pointer; font-weight: 700; transition: all 0.3s; flex: 1;
+            cursor: pointer; font-weight: 700; transition: all 0.3s; flex: 1; background: white;
         }
-        .tf-btn:hover { border-color: #667eea; }
+        .tf-btn:hover { border-color: #667eea; background: #f0f0f0; }
         .tf-btn.selected { border-color: #667eea; background: #667eea; color: white; }
         
         .btn {
@@ -97,16 +97,18 @@
         .questions-list { margin-top: 30px; }
         .question-item {
             background: #f8f9ff; padding: 20px; border-radius: 15px;
-            margin-bottom: 15px; border-right: 4px solid #667eea;
+            margin-bottom: 15px; border-right: 4px solid #667eea; display: flex;
+            justify-content: space-between; align-items: start;
         }
+        .question-item .content { flex: 1; }
         .question-item .q-text { font-weight: 700; color: #333; margin-bottom: 8px; }
         .question-item .q-meta {
             display: flex; gap: 15px; font-size: 0.9rem; color: #666; flex-wrap: wrap;
         }
         .question-item .btn-delete {
-            background: #eb3349; color: white; padding: 6px 12px;
+            background: #eb3349; color: white; padding: 8px 12px;
             border: none; border-radius: 8px; cursor: pointer; font-weight: 700;
-            float: left;
+            flex-shrink: 0;
         }
         .question-item .btn-delete:hover { background: #c72f39; }
         .clear-all { padding: 15px; text-align: center; }
@@ -114,27 +116,20 @@
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal { background: white; border-radius: 20px; padding: 30px; max-width: 500px; width: 100%; text-align: center; }
-        .modal h3 { color: #667eea; margin-bottom: 15px; }
+        .modal h3 { color: #667eea; margin-bottom: 15px; font-size: 1.3rem; }
         .modal p { color: #666; margin-bottom: 20px; }
         .modal button { padding: 10px 30px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .modal button:hover { background: #5568d3; }
         
-        .hidden { display: none; }
+        .hidden { display: none !important; }
         .loading { text-align: center; padding: 20px; }
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 20px; height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         @media (max-width: 600px) {
             .navbar { padding: 10px 15px; }
             .type-selector { grid-template-columns: 1fr; }
             .tf-answers { flex-direction: column; }
+            .question-item { flex-direction: column; }
+            .question-item .btn-delete { width: 100%; margin-top: 10px; }
         }
     </style>
 </head>
@@ -143,6 +138,7 @@
     <div class="navbar">
         <div class="navbar-brand">🎓 الامتحانات الذكية</div>
         <div class="navbar-links">
+            <a href="index.html">🏠 الرئيسية</a>
             <a href="questions.html" class="active">📝 الأسئلة</a>
             <a href="exam.html">📖 الامتحان</a>
             <a href="dashboard.html">📊 النتائج</a>
@@ -155,16 +151,17 @@
             <h2>➕ إضافة سؤال جديد</h2>
             
             <!-- Question Type Selector -->
+            <label style="display:block; margin-bottom:15px; font-weight:700; color:#333;">اختر نوع السؤال</label>
             <div class="type-selector">
-                <div class="type-card active" onclick="selectType('mcq')">
+                <div class="type-card active" data-type="mcq" onclick="selectType(this)">
                     <div class="icon">☑️</div>
                     <div class="name">اختيار من متعدد</div>
                 </div>
-                <div class="type-card" onclick="selectType('tf')">
+                <div class="type-card" data-type="tf" onclick="selectType(this)">
                     <div class="icon">✔️</div>
                     <div class="name">صحيح/خطأ</div>
                 </div>
-                <div class="type-card" onclick="selectType('text')">
+                <div class="type-card" data-type="text" onclick="selectType(this)">
                     <div class="icon">📝</div>
                     <div class="name">إجابة نصية</div>
                 </div>
@@ -184,17 +181,17 @@
 
             <!-- MCQ Options -->
             <div id="mcqSection">
-                <label style="display:block; margin-bottom:15px; font-weight:700;">خيارات الإجابة</label>
+                <label style="display:block; margin-bottom:15px; font-weight:700; color:#333;">خيارات الإجابة</label>
                 <div class="options-container" id="mcqOptions"></div>
-                <button class="btn btn-primary" onclick="addMcqOption()" style="width:100%;">+ إضافة خيار</button>
+                <button class="btn btn-primary" onclick="addMcqOption()" style="width:100%; margin-bottom:20px;">+ إضافة خيار</button>
             </div>
 
             <!-- T/F Options -->
             <div id="tfSection" class="hidden">
-                <label style="display:block; margin-bottom:15px; font-weight:700;">الإجابة الصحيحة</label>
+                <label style="display:block; margin-bottom:15px; font-weight:700; color:#333;">الإجابة الصحيحة</label>
                 <div class="tf-answers">
-                    <div class="tf-btn" onclick="selectTf(true)">صحيح ✅</div>
-                    <div class="tf-btn" onclick="selectTf(false)">خطأ ❌</div>
+                    <button class="tf-btn selected" data-value="true" onclick="selectTf(this)">صحيح ✅</button>
+                    <button class="tf-btn" data-value="false" onclick="selectTf(this)">خطأ ❌</button>
                 </div>
             </div>
 
@@ -231,6 +228,7 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -242,7 +240,9 @@
             appId: "1:127469194735:web:c658c1b00635cdc5083a1a"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
+        firebase.auth().signInAnonymously().catch(err => console.error('Auth Error:', err));
         const db = firebase.firestore();
 
         let currentType = 'mcq';
@@ -250,18 +250,35 @@
         let tfAnswer = true;
         let questions = [];
 
+        // Initialize MCQ Options
+        function initMcqOptions() {
+            mcqOptions = [
+                { text: '', isCorrect: true }, 
+                { text: '', isCorrect: false }
+            ];
+            renderMcqOptions();
+        }
+
         // Type Selection
-        function selectType(type) {
+        function selectType(element) {
+            const type = element.getAttribute('data-type');
             currentType = type;
-            document.querySelectorAll('.type-card').forEach(card => card.classList.remove('active'));
-            event.target.closest('.type-card').classList.add('active');
             
+            // Update active state
+            document.querySelectorAll('.type-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            // Toggle sections
             document.getElementById('mcqSection').classList.toggle('hidden', type !== 'mcq');
             document.getElementById('tfSection').classList.toggle('hidden', type !== 'tf');
             document.getElementById('textSection').classList.toggle('hidden', type !== 'text');
             
-            mcqOptions = [];
-            if (type === 'mcq') renderMcqOptions();
+            // Initialize MCQ if needed
+            if (type === 'mcq' && mcqOptions.length === 0) {
+                initMcqOptions();
+            }
         }
 
         // MCQ Options
@@ -270,26 +287,38 @@
             renderMcqOptions();
         }
 
+        function removeMcqOption(index) {
+            mcqOptions.splice(index, 1);
+            renderMcqOptions();
+        }
+
+        function setCorrectMcq(index) {
+            mcqOptions.forEach((opt, i) => opt.isCorrect = i === index);
+            renderMcqOptions();
+        }
+
+        function updateMcqText(index, value) {
+            mcqOptions[index].text = value;
+        }
+
         function renderMcqOptions() {
             const container = document.getElementById('mcqOptions');
             container.innerHTML = mcqOptions.map((opt, i) => `
                 <div class="option-item">
                     <input type="radio" name="correctMcq" value="${i}" ${opt.isCorrect ? 'checked' : ''} onchange="setCorrectMcq(${i})">
-                    <input type="text" placeholder="الخيار ${String.fromCharCode(65 + i)}" value="${opt.text}" onchange="mcqOptions[${i}].text=this.value">
-                    <button onclick="mcqOptions.splice(${i}, 1); renderMcqOptions();">حذف</button>
+                    <input type="text" placeholder="الخيار ${String.fromCharCode(65 + i)}" value="${opt.text}" onchange="updateMcqText(${i}, this.value)" style="padding:10px;">
+                    <button type="button" onclick="removeMcqOption(${i})">حذف</button>
                 </div>
             `).join('');
         }
 
-        function setCorrectMcq(idx) {
-            mcqOptions.forEach((opt, i) => opt.isCorrect = i === idx);
-        }
-
         // T/F
-        function selectTf(val) {
-            tfAnswer = val;
-            document.querySelectorAll('.tf-btn').forEach(btn => btn.classList.remove('selected'));
-            event.target.classList.add('selected');
+        function selectTf(element) {
+            tfAnswer = element.getAttribute('data-value') === 'true';
+            document.querySelectorAll('.tf-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            element.classList.add('selected');
         }
 
         // Add Question
@@ -309,6 +338,13 @@
                     showModal('⚠️ تنبيه', 'أضف خيارين على الأقل');
                     return;
                 }
+                
+                // Check if all options have text
+                if (mcqOptions.some(opt => !opt.text.trim())) {
+                    showModal('⚠️ تنبيه', 'جميع الخيارات يجب أن تحتوي على نص');
+                    return;
+                }
+                
                 const correctIdx = mcqOptions.findIndex(opt => opt.isCorrect);
                 if (correctIdx === -1) {
                     showModal('⚠️ تنبيه', 'حدد الإجابة الصحيحة');
@@ -331,7 +367,7 @@
             try {
                 await db.collection('questions').add({
                     ...question,
-                    createdAt: new Date(),
+                    createdAt: firebase.firestore.Timestamp.now(),
                     examId: 'default'
                 });
                 showModal('✅ نجاح', 'تم إضافة السؤال بنجاح');
@@ -339,6 +375,7 @@
                 loadQuestions();
             } catch (err) {
                 showModal('❌ خطأ', 'حدث خطأ: ' + err.message);
+                console.error('Error:', err);
             }
         }
 
@@ -348,40 +385,52 @@
             document.getElementById('textAnswer').value = '';
             mcqOptions = [];
             tfAnswer = true;
-            selectType('mcq');
+            
+            // Reset UI
+            const typeCard = document.querySelector('.type-card.active');
+            if (typeCard) selectType(typeCard);
         }
 
         // Load Questions
         async function loadQuestions() {
             try {
-                const snapshot = await db.collection('questions').where('examId', '==', 'default').get();
+                const snapshot = await db.collection('questions')
+                    .where('examId', '==', 'default')
+                    .orderBy('createdAt', 'desc')
+                    .get();
+                
                 questions = [];
                 snapshot.forEach(doc => {
                     questions.push({ id: doc.id, ...doc.data() });
                 });
                 renderQuestions();
             } catch (err) {
-                console.error('خطأ:', err);
+                console.error('Error loading questions:', err);
             }
         }
 
         function renderQuestions() {
             document.getElementById('questionsCount').textContent = questions.length;
             const container = document.getElementById('questionsList');
+            
             if (questions.length === 0) {
                 container.innerHTML = '<p style="text-align:center; color:#999; padding:20px;">لا توجد أسئلة حتى الآن</p>';
                 return;
             }
+            
             container.innerHTML = questions.map((q, i) => {
                 let typeEmoji = q.type === 'mcq' ? '☑️' : q.type === 'tf' ? '✔️' : '📝';
+                let typeLabel = q.type === 'mcq' ? 'اختيار من متعدد' : q.type === 'tf' ? 'صحيح/خطأ' : 'إجابة نصية';
                 return `
                     <div class="question-item">
-                        <button class="btn-delete" onclick="deleteQuestion('${q.id}')">حذف</button>
-                        <div class="q-text">${i + 1}. ${q.text}</div>
-                        <div class="q-meta">
-                            <span>${typeEmoji} ${q.type}</span>
-                            <span>⏱️ ${q.time} ثانية</span>
+                        <div class="content">
+                            <div class="q-text">${i + 1}. ${q.text}</div>
+                            <div class="q-meta">
+                                <span>${typeEmoji} ${typeLabel}</span>
+                                <span>⏱️ ${q.time} ثانية</span>
+                            </div>
                         </div>
+                        <button class="btn-delete" onclick="deleteQuestion('${q.id}')">حذف</button>
                     </div>
                 `;
             }).join('');
@@ -392,19 +441,29 @@
             try {
                 await db.collection('questions').doc(id).delete();
                 loadQuestions();
+                showModal('✅ تم', 'تم حذف السؤال بنجاح');
             } catch (err) {
-                console.error('خطأ:', err);
+                showModal('❌ خطأ', 'حدث خطأ: ' + err.message);
+                console.error('Error:', err);
             }
         }
 
         async function clearAllQuestions() {
             if (!confirm('هل أنت متأكد من حذف جميع الأسئلة؟')) return;
             try {
-                const snapshot = await db.collection('questions').where('examId', '==', 'default').get();
-                snapshot.forEach(doc => doc.ref.delete());
+                const snapshot = await db.collection('questions')
+                    .where('examId', '==', 'default')
+                    .get();
+                
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                
                 loadQuestions();
+                showModal('✅ تم', 'تم حذف جميع الأسئلة بنجاح');
             } catch (err) {
-                console.error('خطأ:', err);
+                showModal('❌ خطأ', 'حدث خطأ: ' + err.message);
+                console.error('Error:', err);
             }
         }
 
@@ -418,8 +477,11 @@
             document.getElementById('modal').classList.remove('active');
         }
 
-        // Load on init
-        loadQuestions();
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initMcqOptions();
+            loadQuestions();
+        });
     </script>
 </body>
 </html>
